@@ -1,8 +1,18 @@
-export function add(a: number, b: number): number {
-  return a + b;
-}
+import express from "express";
+import "jsr:@std/dotenv/load";
+import "./src/config/db.config.ts";
+import { loggerMiddleware } from "./src/middlewares/logger.middleware.ts";
+import userRouter from "./src/routes/user.route.ts";
 
-// Learn more at https://docs.deno.com/runtime/manual/examples/module_metadata#concepts
-if (import.meta.main) {
-  console.log("Add 2 + 3 =", add(2, 3));
-}
+const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(loggerMiddleware);
+
+app.use("/user", userRouter);
+
+const PORT = Deno.env.get("APP_PORT") ?? 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
