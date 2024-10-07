@@ -1,8 +1,13 @@
-export function add(a: number, b: number): number {
-  return a + b;
-}
+import express from 'express';
+import "jsr:@std/dotenv/load";
+import "./src/config/db.config.ts";
+const app = express();
 
-// Learn more at https://docs.deno.com/runtime/manual/examples/module_metadata#concepts
-if (import.meta.main) {
-  console.log("Add 2 + 3 =", add(2, 3));
-}
+app.use(express.json());
+
+import postRouter from './src/routes/post.route.ts';
+app.use('/post',postRouter);
+
+app.listen(3000, () => {
+    console.log('Server running on port 3000');
+});

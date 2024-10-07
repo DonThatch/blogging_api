@@ -1,4 +1,4 @@
-import mongoose from "npm:mongoose";
+import mongoose from 'npm:mongoose';
 
 mongoose
     .connect(Deno.env.get("MONGO_CONNECTION_STRING") ?? "")
