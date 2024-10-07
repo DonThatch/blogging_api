@@ -1,13 +1,20 @@
 import type { Request, Response } from "express";
 import { User } from "../models/user.model.ts";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 export const createUser = async (req: Request, res: Response) => {
-    const user = new User({
-        email: req.body.email,
-        username: req.body.username,
-        password: req.body.password
-    });
+    const { email, username, password } = req.body;
+
     try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = new User({
+            email,
+            username,
+            password: hashedPassword
+        });
+
         const newUser = await user.save();
         res.status(201).json(newUser);
     } catch (error: any) {
@@ -37,3 +44,25 @@ export const getUserById = async (req: Request, res: Response) => {
     }
 };
 
+export const login = async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid email or password." });
+        }
+
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            return res.status(400).json({ message: "Invalid email or password." });
+        }
+
+        const secretKey = Deno.env.get('JWT_SECRET_KEY') || "your_secret_key";
+        const token = jwt.sign({ _id: user._id, email: user.email }, secretKey, { expiresIn: "1h" });
+
+        res.json({ token });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+};
