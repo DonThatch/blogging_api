@@ -3,20 +3,30 @@ import { Request, Response } from "express";
 import { CustomError } from "../config/env.config.ts";
 import {commentSchema} from "../models/comment.model.ts";
 import {Like} from "../models/like.model.ts";
+import jwt from "jsonwebtoken";
 
 export const createPost = async (req: Request, res: Response) => {
-    const post = new Post({
-        title: req.body.title,
-        content: req.body.content,
-        author: req.body.author,
-        tags: req.body.tags,
-    });
-    const like = new Like({
-        postId: post._id,
-        likeNumber: 0
-    })
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).send("Access denied. No token provided.");
+    }
 
     try {
+        const secretKey = Deno.env.get('JWT_SECRET_KEY') || "your_secret_key";
+        const decoded = jwt.verify(token, secretKey) as { _id: string };
+
+        const post = new Post({
+            title: req.body.title,
+            content: req.body.content,
+            author: decoded._id,
+            tags: req.body.tags,
+        });
+
+        const like = new Like({
+            postId: post._id,
+            likeNumber: 0
+        });
+
         await post.save();
         await like.save();
         res.status(200).send(`Post ${post.title} created successfully`);
