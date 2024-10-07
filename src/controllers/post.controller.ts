@@ -1,10 +1,7 @@
 import { Post } from "../models/post.model.ts";
 import { Request, Response } from "express";
-
-interface CustomError extends Error {
-    status?: number;
-    message: string;
-}
+import { CustomError } from "../config/env.config.ts";
+import {commentSchema} from "../models/comment.model.ts";
 
 export const createPost = async (req: Request, res: Response): Promise<void> => {
     const post = new Post({
@@ -49,3 +46,16 @@ export const modifyPost = async (req: Request, res: Response): Promise<void> => 
     }
     res.status(200).send(`Post modified successfully`);
 };
+export const getCommentsByPostId = async (req: Request, res: Response): Promise<void> => {
+    console.log("post/:id/comments")
+    const comments = await commentSchema.find({postId: req.params.id});
+    try {
+        if (!comments) {
+            throw {status: 404, message: "Comments not found"};
+        }
+        res.status(200).send(comments);
+    } catch (e) {
+        const error = e as CustomError;
+        res.status(error.status || 500).send(error.message);
+    }
+}
