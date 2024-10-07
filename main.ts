@@ -21,6 +21,10 @@ app.use("/comment", commentRouter);
 import userRouter from "./src/routes/user.route.ts";
 app.use("/user", userRouter);
 
+import likeRouter from "./src/routes/like.route.ts";
+app.use("/like", likeRouter);
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
