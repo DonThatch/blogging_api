@@ -4,11 +4,15 @@ import { Like } from "../models/like.model.ts";
 
 export const like = async (req: Request, res: Response) => {
     try {
-        const like = await Like.findById(req.params.id);
+        const like = await Like.findOne({ postId: req.params.id });
         if (like) {
             like.likeNumber += 1;
         } else {
-            res.status(404).json({ error: "Like not found" });
+            const newLike = new Like({
+                postId: req.params.id,
+                likeNumber: 1,
+            });
+            await newLike.save();
         }
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -17,13 +21,13 @@ export const like = async (req: Request, res: Response) => {
 
 export const unlike = async (req: Request, res: Response) => {
     try {
-        const like = await Like.findById(req.params.id);
-        if (like && like.likeNumber > 0) {
+        const like = await Like.findOne({ postId: req.params.id });
+        if (like) {
             like.likeNumber -= 1;
         } else {
-            res.status(404).json({ error: "Like not found" });
+            res.status(404).json({ message: "Like not found" });
         }
-    } catch (error: any) {
+    }catch (error: any) {
         res.status(500).json({ error: error.message });
     }
 }
